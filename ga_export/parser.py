@@ -17,26 +17,40 @@ class parse():
         '''
         
         :param objet: recherche un objet contenu dans une balise
-               kwargs : {'type':None, 'classe':None, 'value':None, 'regex':None} 
+               kwargs : {'selection':{'type':None, 'classe':None, 'value':None, 'regex':None}, 
+                         'resultat':{'text':'', 'attr':['liste des attributs']}}}
+               Le selection permet de fair eune selection des balises et le résultat permet 
+               de faire remonter les données attendues
         :return: 
     
         '''
+        args=[]
+        results={}
 
-        model = {'type':None, 'classe':None, 'value':None, 'regex':None}
-        dict = { args:kwargs[args] for args in model.keys() if args in kwargs.keys() }
-        print([i.attrs for i in self.soup.find_all(**kwargs)])
-        print([i.contents for i in self.soup.find_all(**kwargs)])
+        try:
+            selection = kwargs['selection']
+            resultat = kwargs['resultat']
+        except KeyError:
+            raise("les keys arguments sont malformés, ces derniers doivent contenir les clés 'resultat' et 'selection'")
+
+        if 'type' in selection:
+            args.append(selection['type'])
+            selection.pop('type')
+
+        ## Recherche de contenu
+        recherche = self.soup.find_all(*args, **selection)
+        ## Tri de la balise text
+        results.update({'text':contenu.text for contenu in recherche if 'text' in resultat})
+        ## Tri de la balise attrs pour ne garder que les attributs
+        results.update({j:item.attrs[j][0] if type(item.attrs[j])==list else item.attrs[j]
+                        for item in recherche for j in resultat.get('attrs', [])})
+        return results
 
 
 
-
-    def filterfunct(self, **kwargs):
-        '''
-        
-        :param kwargs: paramètres injectés dans parse 
-        :return: 
-        '''
-        return reduce(operator.and_, kwargs)
 
 if __name__=='__main__':
-    a = parse('<html><head><title>test</title></head><body><div class="test" value="ok">xxx</div><div class="test" >yyy</div></body></html>').parse(**{'class':'test', 'value':'ok'})
+    a = parse('<html><head><title>test</title></head><body><div class="test" value="ok" roror="tatayoyo" rama="rama yade">'
+              'xxx</div><div class="test" >yyy</div></body></html>').parse(**{'selection':{'type':'div', 'class':'test', 'value':'ok'},
+                                                                              'resultat':{'text':'', 'attrs':['class', ]}})
+    print(a)
