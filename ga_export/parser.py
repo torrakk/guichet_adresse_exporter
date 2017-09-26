@@ -13,9 +13,19 @@ class parse():
         self.page = page
         self.soup = BeautifulSoup(self.page, 'html.parser')
 
+    def list_parse(self, list_baliz):
+        '''
+        Permet de parser une liste de balise
+        
+        :param list: parse une liste de kwargs
+        :return: 
+        List_resultat
+        '''
+        return [ self.parse(**baliz) for baliz in list_baliz ]
+
     def parse(self, **kwargs):
         '''
-        
+        Permet de faire de recherche de balise et de les retourner sous forme de dictionnaire
         :param objet: recherche un objet contenu dans une balise
                kwargs : {'selection':{'type':None, 'classe':None, 'value':None, 'regex':None}, 
                          'resultat':{'text':'', 'attr':['liste des attributs']}}}
@@ -34,8 +44,8 @@ class parse():
             raise("les keys arguments sont malformés, ces derniers doivent contenir les clés 'resultat' et 'selection'")
 
         if 'type' in selection:
-            args.append(selection['type'])
-            selection.pop('type')
+            args.append(selection.pop('type'))
+
 
         ## Recherche de contenu
         recherche = self.soup.find_all(*args, **selection)
@@ -51,6 +61,15 @@ class parse():
 
 if __name__=='__main__':
     a = parse('<html><head><title>test</title></head><body><div class="test" value="ok" roror="tatayoyo" rama="rama yade">'
-              'xxx</div><div class="test" >yyy</div></body></html>').parse(**{'selection':{'type':'div', 'class':'test', 'value':'ok'},
-                                                                              'resultat':{'text':'', 'attrs':['class', ]}})
+              'xxx</div><span class="roro" value="ok" roror="tatayoyo" rama="rama yade">'
+              'je vis en pyjama</span><div class="ruru" >yyy</div></body></html>').list_parse([{'selection':{'type':'span', 'class':'roro', 'value':'ok'},
+                                                                              'resultat':{'text':'', 'attrs':['class', ]}},
+                                                                                               {'selection': {
+                                                                                                   'type': 'div',
+                                                                                                   'class': 'test',
+                                                                                                   'value': 'ok'},
+                                                                                                'resultat': {'text': '',
+                                                                                                             'attrs': [
+                                                                                                                 'class', ]}}
+                                                                                               ])
     print(a)
