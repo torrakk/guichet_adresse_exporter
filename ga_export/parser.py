@@ -3,10 +3,10 @@
 
 ####
 from bs4 import BeautifulSoup
-import operator
-from functools import reduce
 
-class parse():
+
+
+class Parse():
 
     def __init__(self, page):
         assert type(page)==str, "La page doit être de type string"
@@ -21,7 +21,10 @@ class parse():
         :return: 
         List_resultat
         '''
-        return [ self.parse(**baliz) for baliz in list_baliz ]
+        if list_baliz:
+            return [ self.parse(**baliz) for baliz in list_baliz ]
+        else:
+            return self.page
 
     def parse(self, **kwargs):
         '''
@@ -60,7 +63,7 @@ class parse():
 
 
 if __name__=='__main__':
-    a = parse('<html><head><title>test</title></head><body><div class="test" value="ok" roror="tatayoyo" rama="rama yade">'
+    a = Parse('<html><head><title>test</title></head><body><div class="test" value="ok" roror="tatayoyo" rama="rama yade">'
               'xxx</div><span class="roro" value="ok" roror="tatayoyo" rama="rama yade">'
               'je vis en pyjama</span><div class="ruru" >yyy</div></body></html>').list_parse([{'selection':{'type':'span', 'class':'roro', 'value':'ok'},
                                                                               'resultat':{'text':'', 'attrs':['class', ]}},
