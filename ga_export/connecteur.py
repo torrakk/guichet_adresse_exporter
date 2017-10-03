@@ -8,7 +8,7 @@ from ga_export.settings import *
 class Connect(object):
 
 
-    def __init__(self, session, scenari):
+    def __init__(self, session, **scenari):
         '''
         L'objet connect permet de se connecter au guichet adresse et d'interrragir avec ce dernier
         :param adresse: adresse à laquelle se connecter (chaine de caractère)
@@ -54,9 +54,9 @@ class Connect(object):
         :param url: page demandée
         :return: 
         '''
+        print('nous sommes en get')
         async with self.session.get(**kwargs) as response:
-            print(response.status)
-            return await response.read()
+            return await response.text()
 
 
     async def post_request(self, **kwargs):
@@ -66,13 +66,13 @@ class Connect(object):
         :return: 
         web response, aoihttp object
         '''
+        print('nous sommes en post')
         async with self.session.post(**kwargs) as response:
-            print(response.status)
-            return await response.read()
+            return await response.text()
 
     async def request(self):
         kwargs = self.action_repl()
-        await self.action(kwargs)
+        return await self.action(**kwargs)
 
 
 

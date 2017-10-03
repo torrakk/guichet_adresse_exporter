@@ -27,16 +27,19 @@ class Parse():
             return self.page
 
     def parse(self, **kwargs):
+
         '''
+        
         Permet de faire de recherche de balise et de les retourner sous forme de dictionnaire
         :param objet: recherche un objet contenu dans une balise
                kwargs : {'selection':{'type':None, 'classe':None, 'value':None, 'regex':None}, 
                          'resultat':{'text':'', 'attr':['liste des attributs']}}}
                Le selection permet de fair eune selection des balises et le résultat permet 
                de faire remonter les données attendues
-        :return: 
+        :return:
     
         '''
+
         args=[]
         results={}
 
@@ -49,9 +52,8 @@ class Parse():
         if 'type' in selection:
             args.append(selection.pop('type'))
 
-
         ## Recherche de contenu
-        recherche = self.soup.find_all(*args, **selection)
+        recherche = self.soup.find_all(*args, attrs=selection)
         ## Tri de la balise text
         results.update({'text':contenu.text for contenu in recherche if 'text' in resultat})
         ## Tri de la balise attrs pour ne garder que les attributs

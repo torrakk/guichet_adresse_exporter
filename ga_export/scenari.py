@@ -45,12 +45,15 @@ class scenari():
         Nous preparons les arguments pour qu'ils ne concernent que l'action à engagé
         :return: 
         '''
-        co = Connect({ key: value for key, value in self.kwargs.items() if key in ('action', 'url', 'data')})
+        co = Connect(self.session, **{ key: value for key, value in self.kwargs.items() if key in ('action', 'url', 'data')})
         return await co.request()
 
     async def run(self):
         page = await self.connect()
-        return Parse(page).list_parse(self.parse)
+        if self.parse:
+            return Parse(page).list_parse(self.parse)
+        else:
+            return page
 
     def __repr__(self):
         return(str(self.__dict__))
