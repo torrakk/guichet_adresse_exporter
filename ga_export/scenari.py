@@ -16,10 +16,10 @@ class scenari():
     
     '''
 
-    def __init__(self, session, **kwargs):
-        #self.future = asyncio.Future()
-        self.session = session
+    def __init__(self, **kwargs):
+        self.future = asyncio.Future()
         self.kwargs = kwargs
+        # print("objet créée")
         actions = ['action', 'url', 'data', 'parse', 'scenari']
 
         assert list(self.kwargs.keys()) == actions, \
@@ -30,8 +30,6 @@ class scenari():
         for attr, value in kwargs.items():
             if attr in actions:
                 setattr(self, attr, value)
-
-
 
     def validate(self):
         '''
@@ -45,21 +43,33 @@ class scenari():
         Nous preparons les arguments pour qu'ils ne concernent que l'action à engagé
         :return: 
         '''
-        co = Connect(self.session, **{ key: value for key, value in self.kwargs.items() if key in ('action', 'url', 'data')})
+        co = Connect(**{ key: value for key, value in self.kwargs.items() if key in ('action', 'url', 'data')})
         return await co.request()
 
+    def callback_scenari(self, future):
+        '''
+        Methode permettant de se servir de la session ouverte pour continuer à travailler 
+        avec les données reçues et les cookies
+        Pour cela nous injectons l'objet en tant que future dans la boucle evenementielle
+        :return: 
+        '''
+        print('Nous sommes dans le callback')
+        asyncio.ensure_future(scenari(**self.kwargs['scenari']).run())
+
+    def print_fut(self, future):
+        print(future.result())
+
     async def run(self):
-        page = await self.connect()
-        if self.parse:
-            return Parse(page).list_parse(self.parse)
-        else:
-            return page
+        self.future.add_done_callback((self.callback_scenari if self.kwargs['scenari']!=[] else self.print_fut))
+        session, page = await self.connect()
+        return self.future.set_result(Parse(page).list_parse(self.parse)) if self.parse \
+        else self.future.set_result(page)
 
     def __repr__(self):
         return(str(self.__dict__))
 
 
-if __name__=="__main__":
-    with closing(asyncio.get_event_loop()) as loop:
-        con = Connect({'action': 'post_request', 'url': GUICHET_ADRESSE, 'data': CODES})
-        loop.run_until_complete(con.do_scenari())
+# if __name__=="__main__":
+#     with closing(asyncio.get_event_loop()) as loop:
+#         con = Connect({'action': 'post_request', 'url': GUICHET_ADRESSE, 'data': CODES})
+#         loop.run_until_complete(con.do_scenari())

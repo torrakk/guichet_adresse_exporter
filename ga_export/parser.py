@@ -10,6 +10,7 @@ class Parse():
 
     def __init__(self, page):
         assert type(page)==str, "La page doit être de type string"
+
         self.page = page
         self.soup = BeautifulSoup(self.page, 'html.parser')
 
@@ -21,10 +22,8 @@ class Parse():
         :return: 
         List_resultat
         '''
-        if list_baliz:
-            return [ self.parse(**baliz) for baliz in list_baliz ]
-        else:
-            return self.page
+        return [self.parse(**baliz) for baliz in list_baliz] if list_baliz else self.page
+
 
     def parse(self, **kwargs):
 
@@ -54,11 +53,14 @@ class Parse():
 
         ## Recherche de contenu
         recherche = self.soup.find_all(*args, attrs=selection)
+
         ## Tri de la balise text
         results.update({'text':contenu.text for contenu in recherche if 'text' in resultat})
+
         ## Tri de la balise attrs pour ne garder que les attributs
         results.update({j:item.attrs[j][0] if type(item.attrs[j])==list else item.attrs[j]
                         for item in recherche for j in resultat.get('attrs', [])})
+
         return results
 
 
