@@ -4,6 +4,9 @@ from contextlib import closing
 from ga_export.parser import Parse
 from ga_export.connecteur import Connect
 
+class Counter():
+    tasks = 0
+
 class scenari():
     '''
     Un scenari est un objet cappable de se connecter et de s'appeler de manière recursive en passant 
@@ -19,13 +22,13 @@ class scenari():
     def __init__(self, **kwargs):
         self.future = asyncio.Future()
         self.kwargs = kwargs
-        # print("objet créée")
-        actions = ['action', 'url', 'data', 'parse', 'scenari']
-
-        assert list(self.kwargs.keys()) == actions, \
-            "Votre scenari est malformé, " \
-            "il manque des informations " \
-            "{} doit être {}".format(self.kwargs, actions)
+        actions = ['loop', 'action', 'url', 'data', 'parse', 'scenari']
+        Counter.tasks += 1
+        # print(Counter.tasks)
+        # assert list(self.kwargs.i()) in actions, \
+        #     "Votre scenari est malformé, " \
+        #     "il manque des informations " \
+        #     "{} doit être {}".format(list(self.kwargs.keys()), actions)
 
         for attr, value in kwargs.items():
             if attr in actions:
@@ -43,7 +46,7 @@ class scenari():
         Nous preparons les arguments pour qu'ils ne concernent que l'action à engagé
         :return: 
         '''
-        co = Connect(**{ key: value for key, value in self.kwargs.items() if key in ('action', 'url', 'data')})
+        co = Connect(**{ key: value for key, value in self.kwargs.items() if key in ('action', 'url', 'data', 'session')})
         return await co.request()
 
     def callback_scenari(self, future):
@@ -53,17 +56,29 @@ class scenari():
         Pour cela nous injectons l'objet en tant que future dans la boucle evenementielle
         :return: 
         '''
-        print('Nous sommes dans le callback')
-        asyncio.ensure_future(scenari(**self.kwargs['scenari']).run())
+        Counter.tasks -= 1
+        print(future.result())
+        self.kwargs['scenari'].update({'session': self.session})
+        scenar = scenari(loop=self.loop, **self.kwargs['scenari'])
+        asyncio.ensure_future(scenar.run())
 
     def print_fut(self, future):
+        Counter.tasks -= 1
         print(future.result())
+        if Counter.tasks == 0:
+            for url, session in Connect.session_pool.items():
+                session.close()
+            self.loop.stop()
 
     async def run(self):
         self.future.add_done_callback((self.callback_scenari if self.kwargs['scenari']!=[] else self.print_fut))
-        session, page = await self.connect()
+        # try:
+        self.session, page = await self.connect()
         return self.future.set_result(Parse(page).list_parse(self.parse)) if self.parse \
         else self.future.set_result(page)
+        # except (TypeError) as e:
+        #     print("nous stoppons il y a un problème de connexion {}".format(e))
+        #     self.loop.stop()
 
     def __repr__(self):
         return(str(self.__dict__))

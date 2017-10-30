@@ -2,27 +2,16 @@ import re
 import aiohttp
 import asyncio
 from contextlib import closing
+import socket
 import random
 
 from ga_export.settings import *
 
 
-def problemes_connexion(func):
-    '''
-    Decorateur permettant d'émettre une erreur en cas non possiblité de connexion
-    :return: 
-    '''
-    def clientresponse(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except (aiohttp.client_exceptions.ClientResponseError) as e:
-            print('Connection au site web impossible --> {}'.format(e))
-
-    return clientresponse
-
-
 class Connect(object):
-
+    # Variable permettant de partager les sessions en fonction des urls visitées et les fermer proprepement /
+    # une fois que ces dernières ont été visitées
+    session_pool = {}
 
     def __init__(self, **scenari):
         '''
@@ -33,85 +22,41 @@ class Connect(object):
         #self.session = session
         self.scenari = scenari
         self.test_url = re.compile('^http(s)?:\/\/.*\..*$')
+        self.action = self.scenari.pop('action')
+        self.session = self.scenari.pop('session', None)
+        if self.scenari['url'] in self.session_pool.keys():
+            self.session = self.session_pool[self.scenari['url']]
+
 
     def test_url(self, url):
         if not self.test_url.match(url):
             raise('Votre url est malformée')
 
-    def action_repl(self):
-        '''
-        Permet de remplacer les actions text par les bonnes fonctions dans les scenario
-
-        :return: scenari (sans action)
-        '''
-        try:
-            self.action = getattr(self, self.scenari['action'])
-            self.scenari.pop('action')
-        except KeyError:
-            raise ('Vous devez décrire une action pour votre scenari')
-        return self.scenari
-
-    async def request_verif(self, **kwargs):
-        '''
-        fonction qui vérifie la présence des arguments dans l'url
-        
-        :param kwargs: 
-        :return: 
-        '''
-        try:
-            kwargs['url']
-        except KeyError:
-            raise ('il manque la cle : url dans les kwargs')
-
-
-
-    @problemes_connexion
-    async def get_request(self, **kwargs):
+    async def _request(self, **kwargs):
         '''
         
         :param url: page demandée
         :return: 
         '''
         # print('nous sommes en get')
-        if 'session' in kwargs:
-            async with self.session.get(**kwargs) as response:
-                return (self.session, await response.text())
-        else:
-            async with aiohttp.ClientSession(raise_for_status=True) as self.session:
-                #print(await asyncio.sleep(random.randint(1, 100)))
-                # time = random.randint(1, 10)
-                # print(str(time))
-                # await asyncio.sleep(time)
-                async with self.session.get(**kwargs) as response:
+        try:
+                async with self.session.__getattribute__(self.action)(**kwargs) as response:
                     return (self.session, await response.text())
-
-    @problemes_connexion
-    async def post_request(self, **kwargs):
-        '''
-        Génére une requête post via la session etablie
-        
-        :return: 
-        web response, aoihttp object
-        '''
-        # print('nous sommes en post')
-
-        # async with self.session.post(**kwargs) as response:
-        #     return await response.text()
-        # else:
-        if 'session' in kwargs:
-            async with self.session.post(**kwargs) as response:
-                return (self.session, await response.text())
-        else:
-            async with aiohttp.ClientSession(raise_for_status=True) as self.session:
-                # time =random.randint(1, 100)
-                # print(str(time))
-                # await asyncio.sleep(time)
-                async with self.session.post(**kwargs) as response:
-                    return (self.session, await response.text())
+        except (aiohttp.client_exceptions.ClientResponseError, aiohttp.client_exceptions.ClientConnectorError, socket.gaierror) as e:
+            print('Nous avons un problèmes de connexion au site --> {}'.format(e))
 
     async def request(self):
-        kwargs = self.action_repl()
-        return await self.action(**kwargs)
+        if not self.session:
+            self.session = aiohttp.ClientSession(raise_for_status=True)
+            print('nous sommes ici !')
+            self.session_pool[self.scenari.get('url')]=self.session
+            print(self.session_pool)
+            return await self._request(**self.scenari)
+        else:
+            print('nous sommes là !!')
+            return await self._request(**self.scenari)
+
+
 
 
 

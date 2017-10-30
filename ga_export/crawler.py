@@ -2,8 +2,10 @@ import aiohttp
 import asyncio
 from contextlib import closing
 
-from ga_export.scenari import scenari
+from ga_export.scenari import scenari, Counter
 from ga_export.settings import *
+
+
 
 class Crawler():
 
@@ -12,88 +14,27 @@ class Crawler():
         self.scenario = scenario
 
     def do_scenari(self):
-        '''
-        Permet de jouer un ou plusieurs scenario d'envoi de requêtes
-        :return: 
-        '''
-        self.main_session(self.scenario)
 
-    def main_session(self, scenario):
+        [asyncio.ensure_future(scenari(loop=self.loop, **kwargs).run()) for kwargs in self.scenario]
 
-
-                # for kwargs in self.scenario:
-                    #print(kwargs)
-                    # obj =
-                    # run = await obj.run()
-            # for kwargs in self.scenario:
-            #     asyncio.ensure_future(scenari(**kwargs).run())
-        tasks =  [ asyncio.ensure_future(scenari(**kwargs).run()) for kwargs in self.scenario ]
-
-        # print(len(tasks))
-        self.loop.run_until_complete(asyncio.wait(tasks))
-        self.loop.close()
-
+        try:
+            self.loop.run_forever()
+        except:
+            self.loop.close()
+                # self.loop.run_until_complete(asyncio.gather(*tasks))
 
 
 if __name__=="__main__":
     loop = asyncio.get_event_loop()
-    a = {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
+    a = {'action': 'get', 'url': GUICHET_ADRESSE, 'data': CODES,
      'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
                 'resultat': {'text': '', 'attrs': ['value', ], }}]  , 'scenari':[]}
-    robot = Crawler(scenario=[{'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES, 'parse':[{'selection':{'type':'input', 'name':'_csrf_token'},
+    # print(loop)
+    robot = Crawler(scenario=[{'action': 'get', 'url': GUICHET_ADRESSE, 'data': CODES, 'parse':[{'selection':{'type':'input', 'name':'_csrf_token'},
                                                                                                             'resultat':{'text':'','attrs':['value',], }}]
-                                                                                                  , 'scenari': a},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []},
-                              {'action': 'get_request', 'url': GUICHET_ADRESSE, 'data': CODES,
-                               'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                                          'resultat': {'text': '', 'attrs': ['value', ], }}]
-                                  , 'scenari': []}]
-                              , loop=loop )
+                                                                                                  , 'scenari': a} for i in range(0,10)
+
+                            ]
+                            , loop=loop )
+    # print(loop)
     robot.do_scenari()
