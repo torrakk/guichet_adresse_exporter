@@ -48,12 +48,12 @@ class Connect(object):
     async def request(self):
         if not self.session:
             self.session = aiohttp.ClientSession(raise_for_status=True)
-            print('nous sommes ici !')
+            # print('nous sommes ici !')
             self.session_pool[self.scenari.get('url')]=self.session
-            print(self.session_pool)
+            # print(self.session_pool)
             return await self._request(**self.scenari)
         else:
-            print('nous sommes là !!')
+            # print('nous sommes là !!')
             return await self._request(**self.scenari)
 
 

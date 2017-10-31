@@ -26,13 +26,13 @@ class Crawler():
 
 if __name__=="__main__":
     loop = asyncio.get_event_loop()
-    a = {'action': 'get', 'url': GUICHET_ADRESSE, 'data': CODES,
+    a = {'action': 'post', 'url': GUICHET_ADRESSE, 'data': CODES,
      'parse': [{'selection': {'type': 'input', 'name': '_csrf_token'},
-                'resultat': {'text': '', 'attrs': ['value', ], }}]  , 'scenari':[]}
+                'resultat': {'text': '', 'attrs': ['value', ], }}]  , 'scenari':[], 'session':None}
     # print(loop)
     robot = Crawler(scenario=[{'action': 'get', 'url': GUICHET_ADRESSE, 'data': CODES, 'parse':[{'selection':{'type':'input', 'name':'_csrf_token'},
                                                                                                             'resultat':{'text':'','attrs':['value',], }}]
-                                                                                                  , 'scenari': a} for i in range(0,10)
+                                                                                                  , 'scenari': a, 'session':None}
 
                             ]
                             , loop=loop )

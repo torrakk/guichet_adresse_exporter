@@ -22,13 +22,13 @@ class scenari():
     def __init__(self, **kwargs):
         self.future = asyncio.Future()
         self.kwargs = kwargs
-        actions = ['loop', 'action', 'url', 'data', 'parse', 'scenari']
+        actions = ['loop', 'action', 'url', 'data', 'parse', 'scenari', 'session']
         Counter.tasks += 1
         # print(Counter.tasks)
-        # assert list(self.kwargs.i()) in actions, \
-        #     "Votre scenari est malformé, " \
-        #     "il manque des informations " \
-        #     "{} doit être {}".format(list(self.kwargs.keys()), actions)
+        assert list(self.kwargs.keys()) == actions, \
+            "Votre scenari est malformé, " \
+            "il manque des informations " \
+            "{} doit être {}".format(list(self.kwargs.keys()), actions)
 
         for attr, value in kwargs.items():
             if attr in actions:
@@ -66,6 +66,7 @@ class scenari():
         Counter.tasks -= 1
         print(future.result())
         if Counter.tasks == 0:
+            # Nous fermons toutes les sessions ouvertes
             for url, session in Connect.session_pool.items():
                 session.close()
             self.loop.stop()
