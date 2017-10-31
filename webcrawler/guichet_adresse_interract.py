@@ -1,5 +1,5 @@
 import os
-from ga_export.settings import *
+from webcrawler.settings import *
 
 RACINE='https://guichet-adresse.ign.fr'
 

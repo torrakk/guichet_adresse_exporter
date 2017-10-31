@@ -5,7 +5,7 @@ from contextlib import closing
 import socket
 import random
 
-from ga_export.settings import *
+from webcrawler.settings import *
 
 
 class Connect(object):

@@ -1,8 +1,8 @@
 import asyncio
 from contextlib import closing
 
-from ga_export.parser import Parse
-from ga_export.connecteur import Connect
+from webcrawler.parser import Parse
+from webcrawler.connecteur import Connect
 
 class Counter():
     tasks = 0

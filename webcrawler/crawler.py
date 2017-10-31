@@ -2,8 +2,8 @@ import aiohttp
 import asyncio
 from contextlib import closing
 
-from ga_export.scenari import scenari, Counter
-from ga_export.settings import *
+from webcrawler.scenari import scenari, Counter
+from webcrawler.settings import *
 
 
 
