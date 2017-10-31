@@ -6,11 +6,11 @@ GUICHET_ADRESSE = 'https://guichet-adresse.ign.fr/login'
 # GUICHET_ADRESSE = 'http://www.loiresemene.fr'
 
 # Login
-LOGIN='pcarrot@loire-semene.fr'
+LOGIN='******'
 
 
 # mot de passe
-MDP='Loiresemene@'
+MDP='******'
 
 # Commune pour lesquels nous voulons faire l'export
 COMMUNE_INSEE={'Aurec-sur-Loire':'43012'}
